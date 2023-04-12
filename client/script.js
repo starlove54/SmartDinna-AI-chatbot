@@ -6,9 +6,9 @@ const chatContainer = document.querySelector('#chat_container');
 let loadInterval ;
 
 //generate ... when the answer is loading
-function loader (element)
+function loader(element)
 {
-  element.textContent= "";
+  element.textContent= '';
   loadInterval  =  setInterval( () => {
     element.textContent += '.';
     if(element.textContent === '...'){
@@ -21,14 +21,14 @@ function loader (element)
 function typeText(element, text){
   let index = 0;
   let interval = setInterval(() => {
-    if(index < text.length){
-      element.innerHTML += text.charAt(index);
+    if(index <  text.length){
+      element.textContent +=text.charAt(index);
       index++;
     } else{
       //setInterval is cleared 
       clearInterval(interval);
     }
-  },20)
+  },25)
 }
 
 //each response needs unique id
@@ -39,18 +39,27 @@ function generateUniqueId(){
   return `id-${timestamp}-${hexaDecimalString}`;
 }
 
-function chatStripe(isAi, value, uniqueId){
-  return (`<div class="wrapper ${isAi && 'ai'}" >
-  <div class="chat">
-  <div class = "profile">
-  <img src ="${isAi ? bot : user}" 
-  alt="${isAi ? 'bot' : 'user'}"/>
-  </div>
-  <div class="message" id =${uniqueId}>${value}
-  </div>
-  </div>
-  </div>`)
-}
+
+  // isAi  whether message from bot or from user
+  // value  is a string that represents the content of the message.
+  // uniqueId  is a string that represents the unique identifier of the message.
+  // It is used as the ID of the message container element.
+
+
+  function chatStripe(isAi, value, uniqueId){
+    return (`<div class="wrapper ${isAi && 'ai'}" >
+    <div class="chat">
+    <div class = "profile">
+    <img src ="${isAi ? bot : user}" 
+    alt="${isAi ? 'bot' : 'user'}"/>
+    </div>
+    <div class="message" id =${uniqueId}>
+    ${value}
+    </div>
+    </div>
+    </div>`
+    )
+  }``
 
 
 const handleSubmit = async (e) => {
@@ -60,17 +69,17 @@ e.preventDefault();
 const data = new FormData(form);
 
 //user's chatstripe
-chatContainer.innerHTML = chatStripe(false, data.get('prompt'));
+chatContainer.innerHTML += chatStripe(false, data.get('prompt'));
 form.reset(); 
 
 //bot's chatstripe
 const uniqueId = generateUniqueId();
-chatContainer.innerHTML+= chatStripe(true, " ",uniqueId);
+chatContainer.innerHTML+= chatStripe(true," ",uniqueId);
 chatContainer.scrollTop = chatContainer.scrollHeight;
 const messageDiv = document.getElementById(uniqueId);
 loader(messageDiv);
 
-//fethc data from server 
+//fetch data from server 
 const response = await fetch('https://smartdinna.onrender.com', {
   method: 'POST',
   headers: {
@@ -87,20 +96,15 @@ messageDiv.innerHTML = '';
 if(response.ok){
   const data =  await response.json();
   const personalData = data.bot.trim();
-
   typeText(messageDiv, personalData);
 } else{
   const err = await response.text();
-
   messageDiv.innerHTML  = "Something went wrong";  
   alert(err);
 }
-
 }
 
-
 form.addEventListener('submit' , handleSubmit);
-
 form.addEventListener('keyup', (e) => {
   if(e.keyCode === 13){
     handleSubmit(e);
